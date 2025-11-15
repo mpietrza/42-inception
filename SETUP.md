@@ -23,8 +23,13 @@ echo 127.0.0.1   mpietrza.42.fr >> C:\Windows\System32\drivers\etc\hosts
 
 ### 2. Environment Variables
 
-The `.env` file in the `srcs/` directory contains all necessary environment variables.
-You can modify these values as needed, but ensure they meet the security requirements.
+Copy the example environment file and customize it:
+
+```bash
+cp srcs/.env.example srcs/.env
+```
+
+Then edit `srcs/.env` to set your own values. **Important**: Use strong passwords for production!
 
 ### 3. Data Directory
 
