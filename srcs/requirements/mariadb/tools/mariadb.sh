@@ -8,11 +8,11 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
 fi
 
 # Start MariaDB in the background (needed for initial setup)
-mysqld --user=mysql --datadir=/var/lib/mysql --skip-networking &
+mariadbd --defaults-file=/etc/my.cnf.d/mariadb-server.cnf --user=mysql --datadir=/var/lib/mysql --skip-networking &
 pid="$!"
 
 # Wait for MariaDB to be ready
-until mysqladmin ping --silent; do
+until mariadb-admin ping --silent; do
 	echo "Waiting for MariaDB to be ready..."
 	sleep 1
 done
@@ -24,7 +24,7 @@ if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
 	#Backticks (\`): for identifiers (database/table/column names) Single quotes: for string values (passwords, usernames, etc.)
 	# '@'%' means that this user can connect from any host
 	# .* means every table in that database
-	mysql -u root <<-EOSQL
+	mariadb -u root <<-EOSQL
 		ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 		CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
 		CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
@@ -36,8 +36,8 @@ if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
 fi
 
 # Shutdown the background MariaDB server
-mysqladmin -u root -p"${MYSQL_ROOT_PASSWORD}" shutdown
+mariadb-admin -u root -p"${MYSQL_ROOT_PASSWORD}" shutdown
 
 # Start MariaDB in the foreground (as PID 1)
-exec mysqld --user=mysql --datadir=/var/lib/mysql --console
+exec mysqld --defaults-file=/etc/my.cnf.d/mariadb-server.cnf --user=mysql --datadir=/var/lib/mysql --console
 

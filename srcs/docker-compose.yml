@@ -1,4 +1,49 @@
 services:
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    image: nginx
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html:ro
+    restart: always
+    networks:
+      - inception
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://localhost", "--insecure"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress
+    build: ./requirements/wordpress
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    volumes:
+      - wordpress_data:/var/www/html
+    env_file:
+      - .env
+    expose:
+      - "9000"
+    restart: always
+    networks:
+      - inception
+    healthcheck:
+      test: ["CMD", "pgrep", "php-fpm"]
+#     test: ["CMD", "curl", "-f", "http://localhost:9000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   mariadb:
     container_name: mariadb
     image: mariadb
@@ -12,6 +57,12 @@ services:
       - "3306"
     networks:
       - inception
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
 
 networks:
   inception:
@@ -20,3 +71,7 @@ networks:
 
 volumes:
   mariadb_data:
+    driver: local
+
+  wordpress_data:
+    driver: local
