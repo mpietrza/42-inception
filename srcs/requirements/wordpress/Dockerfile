@@ -22,7 +22,7 @@ RUN	curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 	&& mv wp-cli.phar /usr/local/bin/wp
 
 # Copy PHP-FPM pool config
-COPY conf/www.conf /etc/php82/php-fpm.d/www/conf
+COPY conf/www.conf /etc/php82/php-fpm.d/www.conf
 
 # Create PHP run directory
 RUN mkdir -p /run/php && chmod 755 /run/php

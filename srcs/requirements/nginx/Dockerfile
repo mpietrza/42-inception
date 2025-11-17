@@ -1,6 +1,6 @@
 FROM alpine:3.21
 
-RUN	apk add --no-cache nginx openssl
+RUN	apk add --no-cache nginx openssl curl
 
 RUN mkdir -p /var/www /var/www/html /etc/nginx/ssl
 

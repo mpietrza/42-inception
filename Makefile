@@ -12,7 +12,7 @@
 
 COMPOSE			:= docker compose
 COMPOSE_FILE	:= srcs/docker-compose.yml
-DATA_PATH		:= home/mpietrza/data
+DATA_PATH		:= /home/mpietrza/data
 
 all: up
 
