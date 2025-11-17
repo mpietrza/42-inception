@@ -11,10 +11,14 @@ RUN	apk add --no-cache \
 	php82-mbstring \
 	php82-zip \
 	php82-gd \
+	php82-phar \
 	php82-redis \
 	mariadb-client \
 	curl \
 	su-exec
+
+# Create symlink (shortcut) so 'php' command works
+RUN ln -s /usr/bin/php82 /usr/bin/php
 
 # Install WP-CLI
 RUN	curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \

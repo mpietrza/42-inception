@@ -16,16 +16,27 @@ DATA_PATH		:= /home/mpietrza/data
 
 all: up
 
+check-hosts:
+	@if ! grep -q "$(DOMAIN_NAME)" /etc/hosts; then \
+		echo "WARNING: $(DOMAIN_NAME) not found in /etc/hosts"; \
+		echo "Run: sudo echo '127.0.0.1 $(DOMAIN_NAME) ' >> /etc/hosts"; \
+		exit 1; \
+	fi
+
 # builds all the images and starts containers----------------------------------
-up:
+up: check-hosts
 	@mkdir -p $(DATA_PATH)/wordpress $(DATA_PATH)/mariadb
 # 		-p - parents (creates parent directories if needed) 
-	@sudo chown -R 999:999 $(DATA_PATH)/mariadb
-	@sudo chmod -R 750 $(DATA_PATH)/mariadb
-	@$(COMPOSE) --file $(COMPOSE_FILE) up --detach --build
+	@$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
 # 		--file (-f) makes docker read the file and not use the default version
-# 		--detach - opens in background 
+# 		--detach (-d) - opens in background 
 # 		--build - always builds the image even if it exists
+
+#  force rebuilds without cache------------------------------------------------
+rebuild:
+	@mkdir -p $(DATA_PATH)/wordpress $(DATA_PATH)/mariadb
+	@$(COMPOSE) -f $(COMPOSE_FILE) build --no-cache
+	@$(COMPOSE) -f $(COMPOSE_FILE) up -d
 
 # stops and removes all services and networks----------------------------------
 down:
@@ -42,7 +53,7 @@ stop:
 
 # shows the combined logs from all containers----------------------------------
 logs:
-	@$(COMPOSE) --file $(COMPOSE_FILE) logs --follow
+	@$(COMPOSE) --file $(COMPOSE_FILE) logs -f
 # 		--follow (-f) prints logs "live" (immediately) in the terminal
 
 # list all the containers in a table with the configuration info
@@ -51,17 +62,18 @@ ps:
 
 # stop and remove all containers and unused Docker resources on the system-----
 clean: down
-	@docker system prune --all --force --volumes
+	
+	@docker system prune -af --volumes
 # 		--all (-a) tells Docker to remove all images, not only dangling (detached) ones
 # 		--force (-f) skips the confirmation prompt
 # 		--volumes tells Docker to remove all unused volumes
 
 # clean + removing all the data------------------------------------------------
 fclean: clean
-	-@rm -rf $(DATA_PATH)
+	sudo rm -rf $(DATA_PATH)
 
 # regenerate and restart all---------------------------------------------------
 re: fclean all
 
-.PHONY: all up down start stop logs ps clean fclean re
+.PHONY: all check-hosts up rebuild down start stop logs ps clean fclean re
 

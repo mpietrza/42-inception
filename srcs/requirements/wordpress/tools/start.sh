@@ -12,10 +12,10 @@ done
 # If WordPress is not installed install it
 if [ ! -f ./wp-config.php ]; then
 	echo "Downloading WordPress..."
-	wp core download --allow-root
+	php -d memory_limit=512M /usr/local/bin/wp core download --allow-root
 
 	echo "Configuring wp-config.php..."
-	wp config create \
+	php -d memory_limit=512M /usr/local/bin/wp config create \
 		--dbname="$MYSQL_DATABASE" \
 		--dbuser="$MYSQL_USER" \
 		--dbpass="$MYSQL_PASSWORD" \
@@ -23,7 +23,7 @@ if [ ! -f ./wp-config.php ]; then
 		--allow-root
 
 	echo "Installing WordPress..."
-	wp core install \
+	php -d memory_limit=512M /usr/local/bin/wp core install \
 		--url="$DOMAIN_NAME" \
 		--title="$WORDPRESS_TITLE" \
 		--admin_user="$WORDPRESS_ADMIN" \
@@ -33,15 +33,17 @@ if [ ! -f ./wp-config.php ]; then
 		--allow-root
 	
 	# Create a second user as author -> no management capacity
-	wp user create "$WORDPRESS_USER" "$WORDPRESS_USER_EMAIL" \
+	php -d memory_limit=512M /usr/local/bin/wp user create "$WORDPRESS_USER" "$WORDPRESS_USER_EMAIL" \
 		--role=author \
 		--user_pass="$WORDPRESS_USER_PASS" \
 		--allow-root
 	
 	# Install and activate a theme for the website
-	wp theme install qi --activate --allow-root
+	php -d memory_limit=512M /usr/local/bin/wp theme install qi --activate --allow-root
 fi
 
 echo "Starting PHP-FPM..."
 #using --nodaemonize flag to keep the process attached to the terminal (PID1)
 exec php-fpm82 --nodaemonize
+
+

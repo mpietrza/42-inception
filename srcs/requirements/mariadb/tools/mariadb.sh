@@ -1,7 +1,7 @@
 #!/bin/sh
 # it is a shebang -> not a comment -> specifies that script should be run with the sh shell
 
-#Initialize MariaDB if the database directory is empty
+# Initialize MariaDB if the database directory is empty
 if [ ! -d "/var/lib/mysql/mysql" ]; then
 	echo "Initializing MariaDB system tables..."
 	mysql_install_db --user=mysql --datadir=/var/lib/mysql
@@ -12,7 +12,7 @@ mariadbd --defaults-file=/etc/my.cnf.d/mariadb-server.cnf --user=mysql --datadir
 pid="$!"
 
 # Wait for MariaDB to be ready
-until mariadb-admin ping --silent; do
+until [ -S /run/mysqld/mysqld.sock ]; do
 	echo "Waiting for MariaDB to be ready..."
 	sleep 1
 done
@@ -32,12 +32,19 @@ if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
 		FLUSH PRIVILEGES;
 	EOSQL
 
-		echo "Database and user created."
-fi
-
-# Shutdown the background MariaDB server
-mariadb-admin -u root -p"${MYSQL_ROOT_PASSWORD}" shutdown
+	echo "Database and user created."
+	
+	# Shutdown the background MariaDB server
+	echo "Shutting down temporary MariaDB instance..."
+	mariadb-admin -u root -p"${MYSQL_ROOT_PASSWORD}" shutdown
+	wait "$pid"
+else
+	echo "Database already exists, skipping initialization..."
+	# Kill the background process
+	kill "$pid"
+	wait "$pid"
+fi 
 
 # Start MariaDB in the foreground (as PID 1)
-exec mysqld --defaults-file=/etc/my.cnf.d/mariadb-server.cnf --user=mysql --datadir=/var/lib/mysql --console
-
+echo "Starting MariaDB server..."
+exec mariadbd --defaults-file=/etc/my.cnf.d/mariadb-server.cnf --user=mysql --datadir=/var/lib/mysql --console
