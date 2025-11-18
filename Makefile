@@ -10,6 +10,7 @@
 #                                                                              #
 # **************************************************************************** #
 
+DOMAIN_NAME		:= mpietrza.42.fr
 COMPOSE			:= docker compose
 COMPOSE_FILE	:= srcs/docker-compose.yml
 DATA_PATH		:= /home/mpietrza/data

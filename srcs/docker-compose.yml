@@ -14,7 +14,7 @@ services:
     networks:
       - inception
     healthcheck:
-      test: ["CMD", "curl", "-f", "https://localhost", "--insecure"]
+      test: ["CMD", "pgrep", "nginx"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -71,6 +71,14 @@ networks:
 volumes:
   mariadb_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mpietrza/data/mariadb
 
   wordpress_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mpietrza/data/wordpress
